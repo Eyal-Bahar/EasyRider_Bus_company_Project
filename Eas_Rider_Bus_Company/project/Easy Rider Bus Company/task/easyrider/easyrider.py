@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 import json
 from collections import Counter
 import inspect
-
+import time
 
 
 @dataclass
@@ -25,6 +25,22 @@ class EzRider:
         except TypeError:
             return False
 
+    def _atime(self, x):
+        """ check is x is a HH:MM """
+        def is_hh_mm_time(time_string):
+            try:
+                time.strptime(time_string, '%H:%M')
+            except ValueError:
+                return False
+            return len(time_string) == 5
+
+        try:
+            return is_hh_mm_time(x)
+        except TypeError:
+            return False
+
+
+
     def __post_init__(self):
         """ initialize instance variables"""
         self.parsed_input = json.loads(self.user_input)
@@ -35,7 +51,7 @@ class EzRider:
                             "stop_name": str,
                             "next_stop": int,
                             "stop_type": self._char,
-                            "a_time": str}
+                            "a_time": self._atime}
 
     def check_data_types(self,inp_field, inp_value) -> bool:
         """ return bool signaling if inp_value matches the required type"""
