@@ -13,7 +13,6 @@ class EzRider:
     # error_counter: dict
     fields: list = field(default_factory=lambda: ["bus_id", "stop_id", "stop_name", "next_stop", "stop_type", "a_time"])
 
-
     def _char(self, x):
         """ check is x is a single upper case letter"""
         try:
@@ -27,6 +26,7 @@ class EzRider:
 
     def _atime(self, x):
         """ check is x is a HH:MM """
+
         def is_hh_mm_time(time_string):
             try:
                 time.strptime(time_string, '%H:%M')
@@ -39,13 +39,11 @@ class EzRider:
         except TypeError:
             return False
 
-
-
     def __post_init__(self):
         """ initialize instance variables"""
         self.parsed_input = json.loads(self.user_input)
         self.data_type_errors = dict.fromkeys(self.fields, 0)  # the error_counter dict
-        self.error_counter = dict.fromkeys(self.fields, 0) # the error_counter dict
+        self.error_counter = dict.fromkeys(self.fields, 0)  # the error_counter dict
         self.dtypes_list = {"bus_id": int,
                             "stop_id": int,
                             "stop_name": str,
@@ -53,7 +51,7 @@ class EzRider:
                             "stop_type": self._char,
                             "a_time": self._atime}
 
-    def check_data_types(self,inp_field, inp_value) -> bool:
+    def check_data_types(self, inp_field, inp_value) -> bool:
         """ return bool signaling if inp_value matches the required type"""
 
         checker = self.dtypes_list[inp_field]
@@ -91,7 +89,7 @@ def stage_one(user_input):
     ezrider = EzRider(user_input)
     ezrider.total_report_errors_found()
     report = ezrider.create_error_report()
-    parsed_report =  "\n".join(report)
+    parsed_report = "\n".join(report)
     return parsed_report
 
 
