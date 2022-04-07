@@ -2,7 +2,7 @@ import unittest
 import easyrider
 
 
-stage_1_input = [
+stage_1_input = """[
     {
         "bus_id": 128,
         "stop_id": 1,
@@ -83,7 +83,7 @@ stage_1_input = [
         "stop_type": 5,
         "a_time": "08:16"
     }
-]
+]"""
 
 STAGE_ONE_OUTPUT = """Type and required field validation: 8 errors
 bus_id: 2
@@ -91,13 +91,12 @@ stop_id: 1
 stop_name: 1
 next_stop: 1
 stop_type: 1
-a_time: 2
-"""
+a_time: 2"""
 
 class TestEasyRider(unittest.TestCase):
-    def test_to_c_what_happens(self):
-        self.assertTrue(easyrider.wat('apple', 'pineapple pie'))
-        self.assertFalse(easyrider.wat('apple', 'orange'))
+    # def test_to_c_what_happens(self):
+    #     self.assertTrue(easyrider.wat('apple', 'pineapple pie'))
+    #     self.assertFalse(easyrider.wat('apple', 'orange'))
 
     def test_stage_one(self, STAGE_ONE_OUTPUT=STAGE_ONE_OUTPUT):
         self.assertTrue(STAGE_ONE_OUTPUT == easyrider.stage_one(stage_1_input))
