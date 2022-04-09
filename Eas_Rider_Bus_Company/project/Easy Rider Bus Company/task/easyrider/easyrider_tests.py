@@ -93,13 +93,110 @@ next_stop: 1
 stop_type: 1
 a_time: 2"""
 
+
+STAGE_TWO_INPUT = """[
+    {
+        "bus_id": 128,
+        "stop_id": 1,
+        "stop_name": "Prospekt Av.",
+        "next_stop": 3,
+        "stop_type": "S",
+        "a_time": "08:12"
+    },
+    {
+        "bus_id": 128,
+        "stop_id": 3,
+        "stop_name": "Elm Street",
+        "next_stop": 5,
+        "stop_type": "",
+        "a_time": "8:19"
+    },
+    {
+        "bus_id": 128,
+        "stop_id": 5,
+        "stop_name": "Fifth Avenue",
+        "next_stop": 7,
+        "stop_type": "OO",
+        "a_time": "08:25"
+    },
+    {
+        "bus_id": 128,
+        "stop_id": 7,
+        "stop_name": "Sesame Street",
+        "next_stop": 0,
+        "stop_type": "F",
+        "a_time": "08:77"
+    },
+    {
+        "bus_id": 256,
+        "stop_id": 2,
+        "stop_name": "Pilotow Street",
+        "next_stop": 3,
+        "stop_type": "S",
+        "a_time": "09:20"
+    },
+    {
+        "bus_id": 256,
+        "stop_id": 3,
+        "stop_name": "Elm",
+        "next_stop": 6,
+        "stop_type": "",
+        "a_time": "09:45"
+    },
+    {
+        "bus_id": 256,
+        "stop_id": 6,
+        "stop_name": "Sunset Boulevard",
+        "next_stop": 7,
+        "stop_type": "A",
+        "a_time": "09:59"
+    },
+    {
+        "bus_id": 256,
+        "stop_id": 7,
+        "stop_name": "Sesame Street",
+        "next_stop": 0,
+        "stop_type": "F",
+        "a_time": "10.12"
+    },
+    {
+        "bus_id": 512,
+        "stop_id": 4,
+        "stop_name": "bourbon street",
+        "next_stop": 6,
+        "stop_type": "S",
+        "a_time": "38:13"
+    },
+    {
+        "bus_id": 512,
+        "stop_id": 6,
+        "stop_name": "Sunset Boulevard",
+        "next_stop": 0,
+        "stop_type": "F",
+        "a_time": "08:16"
+    }
+]"""
+
+STAGE_TWO_OUTPUT = """Format validation: 9 errors
+stop_name: 3
+stop_type: 2
+a_time: 4"""
+
+
 class TestEasyRider(unittest.TestCase):
     # def test_to_c_what_happens(self):
     #     self.assertTrue(easyrider.wat('apple', 'pineapple pie'))
     #     self.assertFalse(easyrider.wat('apple', 'orange'))
 
     def test_stage_one(self, STAGE_ONE_OUTPUT=STAGE_ONE_OUTPUT):
-        self.assertTrue(STAGE_ONE_OUTPUT == easyrider.stage_one(stage_1_input))
+        output = easyrider.stage_one(stage_1_input)
+        self.assertEqual(STAGE_ONE_OUTPUT, output)
+
+    def test_stage_two(self):
+        output = easyrider.stage_two(STAGE_TWO_INPUT)
+        self.assertEqual(STAGE_TWO_OUTPUT, output, 'custom message')
+
+
 
 
 if __name__ == '__main__':
