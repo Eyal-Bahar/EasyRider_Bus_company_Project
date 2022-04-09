@@ -146,6 +146,8 @@ class EzRider:
             pass #Todo
 
     def unqiue_start_final_stops(self):
+        self.start_stops
+        self.final_stops
         for data_point in self.parsed_input:
 
             stop_type = data_point["stop_type"]
@@ -179,17 +181,19 @@ class EzRider:
         self.all_stops[data_point["bus_id"]] += stop_name
 
 
+    def find_transfer_stops(self, all_stops):
+        pass
 
     def stops_sepcifier(self):
         # checks if all bus's have unique start and final stops. if not return and instance of the failing bus line
-        if not self.unqiue_start_final_stops():
+        if not self.unqiue_start_final_stops(): # TODO
             return
         # map routes
         self.stops_sepcifier_report = defaultdict(lambda: 0)
         for data_point in self.parsed_input:
             self.add_stop_name(data_point)
 
-        self.find_transfer_stops(self.all_stops)
+        self.find_transfer_stops(self.all_stops) # TODO
         starts_list = list(set(self.start_stops()))
         finals_list = list(set(self.final_stops()))
         transfer_set = set()
@@ -198,6 +202,7 @@ class EzRider:
             transfer_set.update(a_b_shared_stops)
         transfer_list = list(transfer_set)
         self.stops_sepcifier_report = {"S": starts_list,"T": transfer_list,"F": finals_list}
+
 
 
 
