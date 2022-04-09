@@ -182,26 +182,28 @@ class EzRider:
 
 
     def find_transfer_stops(self, all_stops):
-        pass
+        transfer_set = set()
+        for bus_a, bus_b in itertools.combinations(all_stops.keys(), 2):
+            a_b_shared_stops = list(bus_a.intersect(bus_b))
+            transfer_set.update(a_b_shared_stops)
+        return transfer_set
 
     def stops_sepcifier(self):
         # checks if all bus's have unique start and final stops. if not return and instance of the failing bus line
         if not self.unqiue_start_final_stops(): # TODO
             return
+
         # map routes
-        self.stops_sepcifier_report = defaultdict(lambda: 0)
+        self.all_stops = defaultdict(lambda: 0)
         for data_point in self.parsed_input:
             self.add_stop_name(data_point)
 
-        self.find_transfer_stops(self.all_stops) # TODO
         starts_list = list(set(self.start_stops()))
         finals_list = list(set(self.final_stops()))
-        transfer_set = set()
-        for bus_a, bus_b in itertools.combinations(self.all_stops.keys(), 2):
-            a_b_shared_stops = list(bus_a.intersect(bus_b))
-            transfer_set.update(a_b_shared_stops)
-        transfer_list = list(transfer_set)
-        self.stops_sepcifier_report = {"S": starts_list,"T": transfer_list,"F": finals_list}
+        transfer_list = list(self.find_transfer_stops(self.all_stops))  # TODO
+        self.stops_sepcifier_report = {"S": starts_list,
+                                       "T": transfer_list,
+                                       "F": finals_list}
 
 
 
