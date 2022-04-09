@@ -4,6 +4,7 @@ from collections import Counter, defaultdict
 import inspect
 import time
 import re
+import itertools
 
 
 @dataclass
@@ -144,11 +145,78 @@ class EzRider:
         else:
             pass #Todo
 
+    def unqiue_start_final_stops(self):
+        for data_point in self.parsed_input:
+
+            stop_type = data_point["stop_type"]
+            # check if its filled according to format
+            match = self.check_data_types("stop_type", stop_type)
+            required = "bus_id" in self.is_required
+            if not (required and match):
+                continue
+            else:
+                is_filled = self.check_if_filled("stop_type", stop_type)
+
+            if is_filled:
+                stop_type
+
+    def add_stop_name(self, data_point):
+        stop_name = data_point["stop_name"]
+        # check if its filled according to format
+        match = self.check_data_types("stop_name", stop_name)
+        required = "stop_name" in self.is_required
+        if (required and match):
+            is_filled = self.check_if_filled("stop_name", stop_name)
+        else:
+            raise (NameError, "format or requirement not fulfilled")
+        bus_id = data_point["bus_id"]
+        match = self.check_data_types("bus_id", bus_id)
+        required = "stop_name" in self.is_required
+        if (required and match):
+            is_filled = self.check_if_filled("bus_id", bus_id)
+        else:
+            raise (NameError, "format or requirement not fulfilled")
+        self.all_stops[data_point["bus_id"]] += stop_name
 
 
-def report_format(format_type, ezrider, stops_report=0, tot_err=0):
+
+    def stops_sepcifier(self):
+        # checks if all bus's have unique start and final stops. if not return and instance of the failing bus line
+        if not self.unqiue_start_final_stops():
+            return
+        # map routes
+        self.stops_sepcifier_report = defaultdict(lambda: 0)
+        for data_point in self.parsed_input:
+            self.add_stop_name(data_point)
+
+        self.find_transfer_stops(self.all_stops)
+        starts_list = list(set(self.start_stops()))
+        finals_list = list(set(self.final_stops()))
+        transfer_set = set()
+        for bus_a, bus_b in itertools.combinations(self.all_stops.keys(), 2):
+            a_b_shared_stops = list(bus_a.intersect(bus_b))
+            transfer_set.update(a_b_shared_stops)
+        transfer_list = list(transfer_set)
+        self.stops_sepcifier_report = {"S": starts_list,"T": transfer_list,"F": finals_list}
+
+
+
+def report_format(format_type, ezrider, stops_report=0, tot_err=0, stops_sepcifier_report=0):
+    if format_type == "stage_four":
+        # check if report stopped becuase of a bus line information miss
+        if type(stops_sepcifier_report) == int:
+            print(f"There is no start or end stop for the line: {stops_sepcifier_report}")
+
+        report = []
+        headlines = {"S": "Start", "T": "Transfer", "F": "Finish"}
+        for stop_type, headline in headlines.items():
+            stop_list = stops_sepcifier_report[stop_type]
+            total_stops = len(stops_sepcifier_report[stop_type])
+            report += [f"{headline} stops: {total_stops} {stop_list}"]
+        parsed_report = "\n".join(report)
+        return parsed_report
+
     if format_type == "stage_three":
-        stops_report
         report = ["Line names and number of stops:"]
         for bus_id in stops_report.keys():
             report += ["bus_id: " +  f"{bus_id}, " + f"stops: {stops_report[bus_id]}"]
@@ -187,6 +255,13 @@ def stage_three(user_input):
     ezrider = EzRider(user_input)
     stops_report = ezrider.stops_counter(stand_alone=True)
     parsed_report = report_format("stage_three", ezrider, stops_report=stops_report)
+    return parsed_report
+
+def stage_four(user_input):
+    ezrider = EzRider(user_input)
+    ezrider.stops_sepcifier()
+    stops_sepcifier_report = ezrider.stops_sepcifier_report()
+    parsed_report = report_format("stage_four", ezrider, stops_sepcifier_report=stops_sepcifier_report)
     return parsed_report
 
 if __name__ == '__main__':
