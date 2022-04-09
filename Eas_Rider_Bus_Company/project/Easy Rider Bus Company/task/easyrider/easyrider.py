@@ -123,14 +123,21 @@ def stage_one(user_input):
     parsed_report = "\n".join(report)
     return parsed_report
 
+
+def report_format(format_type, tot_err, ezrider):
+    if format_type == "stage_two":
+        report = [f"Format validation: {tot_err} errors"]
+        for field in ["stop_name", "stop_type", "a_time"]:
+            report += [field + ": " + f"{ezrider.total_errors_dict[field]}"]
+        parsed_report = "\n".join(report)
+    return parsed_report
+
+
 def stage_two(user_input):
     ezrider = EzRider(user_input)
     ezrider.total_report_errors_found()
     tot_err = ezrider.get_tot_error()
-    report = [f"Format validation: {tot_err} errors"]
-    for field in ["stop_name", "stop_type", "a_time"]:
-        report += [field + ": " + f"{ezrider.total_errors_dict[field]}"]
-    parsed_report = "\n".join(report)
+    parsed_report = report_format("stage_two", tot_err, ezrider)
     return parsed_report
 
 
