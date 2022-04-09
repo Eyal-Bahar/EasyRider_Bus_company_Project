@@ -10,9 +10,7 @@ import re
 class EzRider:
     """ class for sorting out the existing database of the "Easy Rider" bus company"""
     user_input: str
-    is_required: list = field(default_factory=lambda: ["bus_id", "stop_id", "stop_name", "next_stop", "a_time"])
-    # error_counter: dict
-    fields: list = field(default_factory=lambda: ["bus_id", "stop_id", "stop_name", "next_stop", "stop_type", "a_time"])
+    #is_required: list = field(default_factory=lambda: ["bus_id", "stop_id", "stop_name", "next_stop", "a_time"])
 
     def _one_char_check(self, x, allowed_chars="SOF "):
         """ check is x is a single upper case letter"""
@@ -61,18 +59,28 @@ class EzRider:
         match = self._one_char_check(x, allowed_chars)
         return match
 
-
     def __post_init__(self):
         """ initialize instance variables"""
+        # all fields
+        self.fields = ["bus_id", "stop_id", "stop_name", "next_stop", "stop_type", "a_time"]
+
+        # required fields to fill in
+        self.is_required = ["bus_id", "stop_id", "stop_name", "next_stop", "a_time"]
+
+        # pasring the input
         self.parsed_input = json.loads(self.user_input)
-        self.data_type_errors = dict.fromkeys(self.fields, 0)  # the error_counter dict
-        self.error_counter = dict.fromkeys(self.fields, 0)  # the error_counter dict
+
+        # list of data types and formats
         self.dtypes_list = {"bus_id": int,
                             "stop_id": int,
                             "stop_name": self._stop_name,
                             "next_stop": int,
                             "stop_type": self._stop_type,
                             "a_time": self._atime}
+
+        # initialize dictionaries for keeping track of errors
+        self.data_type_errors = dict.fromkeys(self.fields, 0)  # the error_counter dict
+        self.error_counter = dict.fromkeys(self.fields, 0)  # the error_counter dict
 
     def check_data_types(self, inp_field, inp_value) -> bool:
         """ return bool signaling if inp_value matches the required type"""
