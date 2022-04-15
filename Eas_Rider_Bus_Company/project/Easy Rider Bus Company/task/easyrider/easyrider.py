@@ -7,6 +7,10 @@ import re
 import itertools
 
 
+class BadBusException(Exception):
+    """Base class for other exceptions"""
+    pass
+
 @dataclass
 class EzRider:
     """ class for sorting out the existing database of the "Easy Rider" bus company"""
@@ -145,25 +149,84 @@ class EzRider:
         else:
             pass #Todo
 
-    def unqiue_start_final_stops(self):
-        self.start_stops
-        self.final_stops
-        for data_point in self.parsed_input:
+    def find_bus_without_f_s(self, start_stops, final_stops):
+        """ find the bus that does not have a s/f stop"""
+        for id in start_stops:
+            if id not in final_stops:
+                return id, "no final stop"
+        for id in final_stops:
+            if id not in start_stops:
+                return id, "no start stop"
 
+    def check_field_validity(self,field="stop_type",entry=" "):
+        match = self.check_data_types(field, entry)
+        required = field in self.is_required
+        if not (required and match):
+            return True
+        else:
+            is_filled = self.check_if_filled(field, entry)
+            return is_filled
+
+
+    def get_buses_with_starts_finals(self):
+        self.start_stops_buses = []
+        self.final_stops_buses = []
+        for data_point in self.parsed_input:
             stop_type = data_point["stop_type"]
             # check if its filled according to format
-            match = self.check_data_types("stop_type", stop_type)
-            required = "bus_id" in self.is_required
-            if not (required and match):
-                continue
-            else:
-                is_filled = self.check_if_filled("stop_type", stop_type)
+            if self.check_field_validity(field="stop_type",entry=stop_type):
+                bus_id = data_point["bus_id"]
+                if self.check_field_validity(field="bus_id", entry=bus_id):
+                    if stop_type == "S":
+                        if bus_id in self.start_stops_buses:
+                            return bus_id, "has more than one start_stop"
+                        self.start_stops_buses.append(bus_id)
+                    if stop_type == "F":
+                        if bus_id in self.final_stops_buses:
+                            return bus_id, "has more than one final_stop"
+                        self.final_stops_buses.append(bus_id)
+        return None, "unique"
 
-            if is_filled:
-                stop_type
+
+
+
+
+    def unqiue_start_final_stops(self):
+        """ list and check if start and final stop are unique across all lines"""
+        bus_id, unique_status = self.get_buses_with_starts_finals() # create stops and finals lists return if are not unique()
+        if unique_status != "unique":
+            error_msg = unique_status
+            return bus_id, error_msg
+        start_bus_set = set(self.start_stops_buses)
+        final_bus_set = set(self.final_stops_buses)
+        if start_bus_set != final_bus_set:
+            bad_bus, error_msg = self.find_bus_without_f_s(self.start_stops_buses, self.final_stops_buses)
+            return bad_bus, error_msg
+        return None, unique_status
+
+
+
+
+
+        # for data_point in self.parsed_input:
+        #     stop_type = data_point["stop_type"]
+        #     # check if its filled according to format
+        #     match = self.check_data_types("stop_type", stop_type)
+        #     required = "bus_id" in self.is_required
+        #     if not (required and match):
+        #         continue
+        #     else:
+        #         is_filled = self.check_if_filled("stop_type", stop_type)
+        #
+        #     if is_filled:
+        #         stop_type
 
     def add_stop_name(self, data_point):
+        """ varify data and add stop name to lists"""
+
+        #get stop name
         stop_name = data_point["stop_name"]
+
         # check if its filled according to format
         match = self.check_data_types("stop_name", stop_name)
         required = "stop_name" in self.is_required
@@ -171,13 +234,18 @@ class EzRider:
             is_filled = self.check_if_filled("stop_name", stop_name)
         else:
             raise (NameError, "format or requirement not fulfilled")
+
+        # get bus id numbers
         bus_id = data_point["bus_id"]
+        # check if its filled according to format
         match = self.check_data_types("bus_id", bus_id)
         required = "stop_name" in self.is_required
         if (required and match):
             is_filled = self.check_if_filled("bus_id", bus_id)
         else:
             raise (NameError, "format or requirement not fulfilled")
+
+        # add stop name to bus id list
         self.all_stops[data_point["bus_id"]] += stop_name
 
 
@@ -190,8 +258,11 @@ class EzRider:
 
     def stops_sepcifier(self):
         # checks if all bus's have unique start and final stops. if not return and instance of the failing bus line
-        if not self.unqiue_start_final_stops(): # TODO
-            return
+        bad_bus, unique_status = self.unqiue_start_final_stops()
+        if bad_bus:
+            error_msg = unique_status
+            print(error_msg, bad_bus)
+            raise BadBusException
 
         # map routes
         self.all_stops = defaultdict(lambda: 0)
@@ -204,8 +275,6 @@ class EzRider:
         self.stops_sepcifier_report = {"S": starts_list,
                                        "T": transfer_list,
                                        "F": finals_list}
-
-
 
 
 def report_format(format_type, ezrider, stops_report=0, tot_err=0, stops_sepcifier_report=0):
@@ -272,5 +341,8 @@ def stage_four(user_input):
     return parsed_report
 
 if __name__ == '__main__':
-    report = stage_three(input())
-    print(report)
+    try:
+        report = stage_three(input())
+        print(report)
+    except BadBusException:
+        pass
