@@ -11,6 +11,9 @@ class BadBusException(Exception):
     """Base class for other exceptions"""
     pass
 
+class FormatError(Exception):
+    pass
+
 @dataclass
 class EzRider:
     """ class for sorting out the existing database of the "Easy Rider" bus company"""
@@ -153,10 +156,10 @@ class EzRider:
         """ find the bus that does not have a s/f stop"""
         for id in start_stops:
             if id not in final_stops:
-                return id, "no final stop"
+                return id, f"There is no start or end stop for the line: {id}."
         for id in final_stops:
             if id not in start_stops:
-                return id, "no start stop"
+                return id, f"There is no start or end stop for the line: {id}."
 
     def check_field_validity(self,field="stop_type",entry=" "):
         match = self.check_data_types(field, entry)
@@ -171,8 +174,11 @@ class EzRider:
     def get_buses_with_starts_finals(self):
         self.start_stops_buses = []
         self.final_stops_buses = []
+        self.start_stops = []
+        self.final_stops = []
         for data_point in self.parsed_input:
             stop_type = data_point["stop_type"]
+            stop_name = data_point["stop_name"]
             # check if its filled according to format
             if self.check_field_validity(field="stop_type",entry=stop_type):
                 bus_id = data_point["bus_id"]
@@ -181,10 +187,12 @@ class EzRider:
                         if bus_id in self.start_stops_buses:
                             return bus_id, "has more than one start_stop"
                         self.start_stops_buses.append(bus_id)
+                        self.start_stops.append(stop_name)
                     if stop_type == "F":
                         if bus_id in self.final_stops_buses:
                             return bus_id, "has more than one final_stop"
                         self.final_stops_buses.append(bus_id)
+                        self.final_stops.append(stop_name)
         return None, "unique"
 
 
@@ -233,7 +241,7 @@ class EzRider:
         if (required and match):
             is_filled = self.check_if_filled("stop_name", stop_name)
         else:
-            raise (NameError, "format or requirement not fulfilled")
+            raise FormatError("format or requirement not fulfilled")
 
         # get bus id numbers
         bus_id = data_point["bus_id"]
@@ -246,13 +254,15 @@ class EzRider:
             raise (NameError, "format or requirement not fulfilled")
 
         # add stop name to bus id list
-        self.all_stops[data_point["bus_id"]] += stop_name
+        self.all_stops[data_point["bus_id"]].append(stop_name)
 
 
     def find_transfer_stops(self, all_stops):
         transfer_set = set()
         for bus_a, bus_b in itertools.combinations(all_stops.keys(), 2):
-            a_b_shared_stops = list(bus_a.intersect(bus_b))
+            a_set = set(all_stops[bus_a])
+            b_set = set(all_stops[bus_b])
+            a_b_shared_stops = list(a_set.intersection(b_set))
             transfer_set.update(a_b_shared_stops)
         return transfer_set
 
@@ -261,21 +271,21 @@ class EzRider:
         bad_bus, unique_status = self.unqiue_start_final_stops()
         if bad_bus:
             error_msg = unique_status
-            print(error_msg, bad_bus)
+            print(error_msg)
             raise BadBusException
 
         # map routes
-        self.all_stops = defaultdict(lambda: 0)
+        self.all_stops = defaultdict(lambda: [])
         for data_point in self.parsed_input:
             self.add_stop_name(data_point)
 
-        starts_list = list(set(self.start_stops()))
-        finals_list = list(set(self.final_stops()))
+        starts_list = list(set(self.start_stops))
+        finals_list = list(set(self.final_stops))
         transfer_list = list(self.find_transfer_stops(self.all_stops))  # TODO
         self.stops_sepcifier_report = {"S": starts_list,
                                        "T": transfer_list,
                                        "F": finals_list}
-
+        [self.stops_sepcifier_report[key].sort() for key in self.stops_sepcifier_report.keys()]
 
 def report_format(format_type, ezrider, stops_report=0, tot_err=0, stops_sepcifier_report=0):
     if format_type == "stage_four":
@@ -285,6 +295,7 @@ def report_format(format_type, ezrider, stops_report=0, tot_err=0, stops_sepcifi
 
         report = []
         headlines = {"S": "Start", "T": "Transfer", "F": "Finish"}
+
         for stop_type, headline in headlines.items():
             stop_list = stops_sepcifier_report[stop_type]
             total_stops = len(stops_sepcifier_report[stop_type])
@@ -336,13 +347,13 @@ def stage_three(user_input):
 def stage_four(user_input):
     ezrider = EzRider(user_input)
     ezrider.stops_sepcifier()
-    stops_sepcifier_report = ezrider.stops_sepcifier_report()
+    stops_sepcifier_report = ezrider.stops_sepcifier_report
     parsed_report = report_format("stage_four", ezrider, stops_sepcifier_report=stops_sepcifier_report)
     return parsed_report
 
 if __name__ == '__main__':
     try:
-        report = stage_three(input())
+        report = stage_four(input())
         print(report)
     except BadBusException:
         pass
