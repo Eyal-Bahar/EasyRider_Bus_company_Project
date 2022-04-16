@@ -287,7 +287,33 @@ class EzRider:
                                        "F": finals_list}
         [self.stops_sepcifier_report[key].sort() for key in self.stops_sepcifier_report.keys()]
 
-def report_format(format_type, ezrider, stops_report=0, tot_err=0, stops_sepcifier_report=0):
+    def stops_time_validation(self):
+        """
+        Requirements from this function
+        1. If the arrival time for the next stop is earlier than or equal to the time of the current stop, stop checking that bus line and remember the name of the incorrect stop.
+        2. Display the information for those bus lines that have time anomalies. If all the lines are correct timewise, print OK.
+        """
+        for data_point in self.parsed_input:
+            # TODO STOPEED HERE!
+            self.stops_time_validator()
+
+
+def report_format(format_type, ezrider, stop_time_validation_report=0):
+    if format_type == "stage_five":
+        report = ["Arrival time test:"]
+        # check if all is good
+        if type(stop_time_validation_report) == int:
+            report.append("OK")
+            parsed_report = "\n".join(report)
+            return parsed_report
+
+        for bus_id, stop_name in stop_time_validation_report.items():
+            report.append(f"bus_id line {bus_id}: wrong time on station {stop_name}")
+
+        parsed_report = "\n".join(report)
+        return parsed_report
+
+
     if format_type == "stage_four":
         # check if report stopped becuase of a bus line information miss
         if type(stops_sepcifier_report) == int:
@@ -349,6 +375,12 @@ def stage_four(user_input):
     ezrider.stops_sepcifier()
     stops_sepcifier_report = ezrider.stops_sepcifier_report
     parsed_report = report_format("stage_four", ezrider, stops_sepcifier_report=stops_sepcifier_report)
+    return parsed_report
+
+def stage_five(user_input):
+    ezrider = EzRider(user_input)
+    ezrider.stops_time_validation()
+    parsed_report = report_format("stage_five", ezrider, ezrider.stops_time_validation_report)
     return parsed_report
 
 if __name__ == '__main__':

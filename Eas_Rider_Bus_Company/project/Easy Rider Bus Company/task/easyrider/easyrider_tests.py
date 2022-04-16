@@ -379,7 +379,6 @@ class TestEasyRider(unittest.TestCase):
         output = easyrider.stage_three(STAGE_THREE_INPUT)
         self.assertEqual(STAGE_THREE_OUTPUT, output, 'custom message')
 
-
     def test_stage_four_two(self):
         """ test input2 gives a badbusexception"""
         self.assertRaises(BadBusException, easyrider.stage_four,STAGE_FOUR_INPUT2)
