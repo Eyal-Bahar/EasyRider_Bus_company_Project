@@ -478,6 +478,96 @@ bus_id line 256: wrong time on station Lombard Street
 bus_id line 512: wrong time on station Elm Street
 bus_id line 1024: wrong time on station Sesame Street"""
 
+stage_six_input = """[
+    {
+        "bus_id": 128,
+        "stop_id": 1,
+        "stop_name": "Prospekt Avenue",
+        "next_stop": 3,
+        "stop_type": "S",
+        "a_time": "08:12"
+    },
+    {
+        "bus_id": 128,
+        "stop_id": 3,
+        "stop_name": "Elm Street",
+        "next_stop": 5,
+        "stop_type": "O",
+        "a_time": "08:19"
+    },
+    {
+        "bus_id": 128,
+        "stop_id": 5,
+        "stop_name": "Fifth Avenue",
+        "next_stop": 7,
+        "stop_type": "O",
+        "a_time": "08:25"
+    },
+    {
+        "bus_id": 128,
+        "stop_id": 7,
+        "stop_name": "Sesame Street",
+        "next_stop": 0,
+        "stop_type": "F",
+        "a_time": "08:37"
+    },
+    {
+        "bus_id": 256,
+        "stop_id": 2,
+        "stop_name": "Pilotow Street",
+        "next_stop": 3,
+        "stop_type": "S",
+        "a_time": "09:20"
+    },
+    {
+        "bus_id": 256,
+        "stop_id": 3,
+        "stop_name": "Elm Street",
+        "next_stop": 6,
+        "stop_type": "",
+        "a_time": "09:45"
+    },
+    {
+        "bus_id": 256,
+        "stop_id": 6,
+        "stop_name": "Sunset Boulevard",
+        "next_stop": 7,
+        "stop_type": "O",
+        "a_time": "09:59"
+    },
+    {
+        "bus_id": 256,
+        "stop_id": 7,
+        "stop_name": "Sesame Street",
+        "next_stop": 0,
+        "stop_type": "F",
+        "a_time": "10:12"
+    },
+    {
+        "bus_id": 512,
+        "stop_id": 4,
+        "stop_name": "Bourbon Street",
+        "next_stop": 6,
+        "stop_type": "S",
+        "a_time": "08:13"
+    },
+    {
+        "bus_id": 512,
+        "stop_id": 6,
+        "stop_name": "Sunset Boulevard",
+        "next_stop": 0,
+        "stop_type": "F",
+        "a_time": "08:16"
+    }
+]"""
+
+stage_six_output = """On demand stops test:
+Wrong stop type: ['Elm Street', 'Sunset Boulevard']"""
+
+stage_six_input2 = """[{"bus_id" : 128, "stop_id" : 1, "stop_name" : "Prospekt Avenue", "next_stop" : 3, "stop_type" : "S", "a_time" : "08:12"}, {"bus_id" : 128, "stop_id" : 3, "stop_name" : "Elm Street", "next_stop" : 5, "stop_type" : "O", "a_time" : "08:19"}, {"bus_id" : 128, "stop_id" : 5, "stop_name" : "Fifth Avenue", "next_stop" : 7, "stop_type" : "O", "a_time" : "08:25"}, {"bus_id" : 128, "stop_id" : 7, "stop_name" : "Sesame Street", "next_stop" : 0, "stop_type" : "F", "a_time" : "08:37"}, {"bus_id" : 256, "stop_id" : 2, "stop_name" : "Pilotow Street", "next_stop" : 3, "stop_type" : "S", "a_time" : "09:20"}, {"bus_id" : 256, "stop_id" : 3, "stop_name" : "Elm Street", "next_stop" : 6, "stop_type" : "", "a_time" : "09:45"}, {"bus_id" : 256, "stop_id" : 6, "stop_name" : "Abbey Road", "next_stop" : 7, "stop_type" : "O", "a_time" : "09:59"}, {"bus_id" : 256, "stop_id" : 7, "stop_name" : "Sesame Street", "next_stop" : 0, "stop_type" : "F", "a_time" : "10:12"}, {"bus_id" : 512, "stop_id" : 4, "stop_name" : "Bourbon Street", "next_stop" : 6, "stop_type" : "S", "a_time" : "08:13"}, {"bus_id" : 512, "stop_id" : 6, "stop_name" : "Abbey Road", "next_stop" : 0, "stop_type" : "F", "a_time" : "08:16"}]"""
+stage_six_output2 = """On demand stops test:
+Wrong stop type: ['Abbey Road', 'Elm Street']"""
+
 class TestEasyRider(unittest.TestCase):
     # def test_to_c_what_happens(self):
     #     self.assertTrue(easyrider.wat('apple', 'pineapple pie'))
@@ -495,6 +585,10 @@ class TestEasyRider(unittest.TestCase):
         output = easyrider.stage_three(STAGE_THREE_INPUT)
         self.assertEqual(STAGE_THREE_OUTPUT, output, 'custom message')
 
+    def test_stage_four(self):
+        output = easyrider.stage_four(STAGE_FOUR_INPUT)
+        self.assertEqual(STAGE_FOUR_OUTPUT, output, 'custom message')
+
     def test_stage_four_two(self):
         """ test input2 gives a badbusexception"""
         self.assertRaises(BadBusException, easyrider.stage_four,STAGE_FOUR_INPUT2)
@@ -511,5 +605,12 @@ class TestEasyRider(unittest.TestCase):
         output3 = easyrider.stage_five(stage_five_input3)
         self.assertEqual(stage_five_output3, output3, 'custom message')
 
+    def test_stage_six(self):
+        output = easyrider.stage_six(stage_six_input)
+        self.assertEqual(stage_six_output, output, 'custom message')
+
+    def test_stage_six2(self):
+        output = easyrider.stage_six(stage_six_input2)
+        self.assertEqual(stage_six_output2, output, 'custom message')
 if __name__ == '__main__':
     unittest.main()

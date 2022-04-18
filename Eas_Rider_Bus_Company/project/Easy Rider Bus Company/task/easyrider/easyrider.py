@@ -286,6 +286,7 @@ class EzRider:
                                        "T": transfer_list,
                                        "F": finals_list}
         [self.stops_sepcifier_report[key].sort() for key in self.stops_sepcifier_report.keys()]
+        return self.stops_sepcifier_report
 
     def stops_time_validation(self):
         """
@@ -313,11 +314,42 @@ class EzRider:
             last_bus_times[bus_id] = last_arrival_time
         return self.time_anomalies
 
-    def stops_time_validatr(self):
-        pass
+    def validate_on_demand_stops(self):
+        self.on_demand_faults = []
+        self.stops_sepcifier() # generate the report
+        for data_point in self.parsed_input:
+            if data_point["stop_type"] != "O":
+                continue
+            stop = data_point["stop_name"]
+            if any(stop in val for val in self.stops_sepcifier_report.values()):
+                self.on_demand_faults.append(stop)
+        self.on_demand_faults = sorted(self.on_demand_faults)
+
+
+
+
+
+
+        # get list of SOF stops
+        # for every stop, check if its not an on-damnd stop
+        #
+
 
 
 def report_format(format_type, ezrider, stop_time_validation_report=0, tot_err=0, stops_report=0):
+
+    if format_type == "stage_six":
+        report = ["On demand stops test:"]
+        # check if all is good
+        if not any(ezrider.on_demand_faults):
+            report.append("OK")
+            parsed_report = "\n".join(report)
+            return parsed_report
+
+        report.append(f"Wrong stop type: {ezrider.on_demand_faults}")
+
+        parsed_report = "\n".join(report)
+        return parsed_report
 
     if format_type == "stage_five":
         report = ["Arrival time test:"]
@@ -337,15 +369,15 @@ def report_format(format_type, ezrider, stop_time_validation_report=0, tot_err=0
 
     if format_type == "stage_four":
         # check if report stopped becuase of a bus line information miss
-        if type(stops_sepcifier_report) == int:
-            print(f"There is no start or end stop for the line: {stops_sepcifier_report}")
+        if type(ezrider.stops_sepcifier_report) == int:
+            print(f"There is no start or end stop for the line: {ezrider.stops_sepcifier_report}")
 
         report = []
         headlines = {"S": "Start", "T": "Transfer", "F": "Finish"}
 
         for stop_type, headline in headlines.items():
-            stop_list = stops_sepcifier_report[stop_type]
-            total_stops = len(stops_sepcifier_report[stop_type])
+            stop_list = ezrider.stops_sepcifier_report[stop_type]
+            total_stops = len(ezrider.stops_sepcifier_report[stop_type])
             report += [f"{headline} stops: {total_stops} {stop_list}"]
         parsed_report = "\n".join(report)
         return parsed_report
@@ -395,7 +427,7 @@ def stage_four(user_input):
     ezrider = EzRider(user_input)
     ezrider.stops_sepcifier()
     stops_sepcifier_report = ezrider.stops_sepcifier_report
-    parsed_report = report_format("stage_four", ezrider, stops_sepcifier_report=stops_sepcifier_report)
+    parsed_report = report_format("stage_four", ezrider)
     return parsed_report
 
 def stage_five(user_input):
@@ -404,9 +436,15 @@ def stage_five(user_input):
     parsed_report = report_format("stage_five", ezrider)
     return parsed_report
 
+def stage_six(user_input):
+    ezrider = EzRider(user_input)
+    ezrider.validate_on_demand_stops()
+    parsed_report = report_format("stage_six", ezrider)
+    return parsed_report
+
 if __name__ == '__main__':
     try:
-        report = stage_five(input())
+        report = stage_six(input())
         print(report)
     except BadBusException:
         pass
