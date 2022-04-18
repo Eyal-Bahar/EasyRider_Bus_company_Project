@@ -322,8 +322,7 @@ def report_format(format_type, ezrider, stop_time_validation_report=0, tot_err=0
     if format_type == "stage_five":
         report = ["Arrival time test:"]
         # check if all is good
-        time_anomalies_content = list(ezrider.time_anomalies.values())[0]
-        if not time_anomalies_content:
+        if not any(ezrider.time_anomalies.values()):
             report.append("OK")
             parsed_report = "\n".join(report)
             return parsed_report
