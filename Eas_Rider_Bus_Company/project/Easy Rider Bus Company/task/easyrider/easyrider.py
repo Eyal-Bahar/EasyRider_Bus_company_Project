@@ -293,26 +293,48 @@ class EzRider:
         1. If the arrival time for the next stop is earlier than or equal to the time of the current stop, stop checking that bus line and remember the name of the incorrect stop.
         2. Display the information for those bus lines that have time anomalies. If all the lines are correct timewise, print OK.
         """
+        last_bus_times = defaultdict(lambda: [])
+        self.time_anomalies = defaultdict(lambda: [])
         for data_point in self.parsed_input:
-            # TODO STOPEED HERE!
-            self.stops_time_validator()
+            # validate_data(bus_id, "bus_id") # Todo
+            bus_id = data_point["bus_id"]
+            if self.time_anomalies[bus_id]:
+                #  no need to keep track of a base that has an annomaly
+                continue
+            # validate_data(last_arrival_time, "a_time") # todo
+            last_arrival_time = data_point["a_time"]
+            if not last_bus_times[bus_id]:
+                last_bus_times[bus_id] = last_arrival_time
+
+            # check if arrival time is older:
+            is_later = (last_bus_times[bus_id] <= last_arrival_time)
+            if not is_later:
+                self.time_anomalies[bus_id] = data_point["stop_name"]
+            last_bus_times[bus_id] = last_arrival_time
+        return self.time_anomalies
+
+    def stops_time_validatr(self):
+        pass
 
 
-def report_format(format_type, ezrider, stop_time_validation_report=0):
+def report_format(format_type, ezrider, stop_time_validation_report=0, tot_err=0, stops_report=0):
+
     if format_type == "stage_five":
         report = ["Arrival time test:"]
         # check if all is good
-        if type(stop_time_validation_report) == int:
+        time_anomalies_content = list(ezrider.time_anomalies.values())[0]
+        if not time_anomalies_content:
             report.append("OK")
             parsed_report = "\n".join(report)
             return parsed_report
 
-        for bus_id, stop_name in stop_time_validation_report.items():
+        for bus_id, stop_name in ezrider.time_anomalies.items():
+            if stop_name == []:
+                continue
             report.append(f"bus_id line {bus_id}: wrong time on station {stop_name}")
 
         parsed_report = "\n".join(report)
         return parsed_report
-
 
     if format_type == "stage_four":
         # check if report stopped becuase of a bus line information miss
@@ -380,12 +402,12 @@ def stage_four(user_input):
 def stage_five(user_input):
     ezrider = EzRider(user_input)
     ezrider.stops_time_validation()
-    parsed_report = report_format("stage_five", ezrider, ezrider.stops_time_validation_report)
+    parsed_report = report_format("stage_five", ezrider)
     return parsed_report
 
 if __name__ == '__main__':
     try:
-        report = stage_four(input())
+        report = stage_five(input())
         print(report)
     except BadBusException:
         pass
